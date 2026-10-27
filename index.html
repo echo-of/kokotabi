@@ -76,12 +76,30 @@ th{background:#f1ecdc}
 </main>
 <footer>にっぽん縦断 こころ旅 データベース（個人用アーカイブ）／データ基準日：2026-10-27／出典：NHK公式エピソードページ。詳細の収録は 304 日目まで、以降は収集中。</footer>
 <script>
-document.addEventListener('toggle', function(ev){
-  var d = ev.target;
-  if(d && d.tagName === 'DETAILS' && !d.open){
-    d.querySelectorAll('details[open]').forEach(function(c){ c.removeAttribute('open'); });
+function closeDesc(d){
+  d.querySelectorAll('details[open]').forEach(function(c){ c.removeAttribute('open'); });
+}
+// 親を閉じる瞬間（まだ表示されているうち）に子も全部閉じる。
+// 隠れた後に属性だけ変わると iOS Safari で「開いているのに中身が空」の表示崩れが出るため。
+document.addEventListener('click', function(ev){
+  var s = ev.target.closest ? ev.target.closest('summary') : null;
+  if(s){
+    var d = s.parentElement;
+    if(d && d.tagName === 'DETAILS' && d.open){ closeDesc(d); }
   }
 }, true);
+document.addEventListener('toggle', function(ev){
+  var d = ev.target;
+  if(d && d.tagName === 'DETAILS' && !d.open){ closeDesc(d); }
+}, true);
+// タブ／都道府県パネルの切替で隠れる側に、開いたままの子を残さない
+document.querySelectorAll('input[name=tab], input[name=prefsel]').forEach(function(r){
+  r.addEventListener('change', function(){
+    document.querySelectorAll('.panel, .prefpanel').forEach(function(p){
+      if(p.offsetParent === null){ closeDesc(p); }
+    });
+  });
+});
 document.querySelectorAll('a.yearchip').forEach(function(a){
   a.addEventListener('click', function(){
     var t = document.querySelector(a.getAttribute('href'));
